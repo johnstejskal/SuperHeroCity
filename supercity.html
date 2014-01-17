@@ -1,0 +1,497 @@
+
+<!-- based on Mr Doobs procedural city http://www.mrdoob.com/lab/javascript/webgl/city/01/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+		<title>Super City</title>
+		<style>
+			body {
+				background-color: #d8e7ff;
+				font-family: Monospace;
+				//cursor: url(cursor.png), auto;
+				margin: 0;
+				overflow: hidden;
+			}
+
+			canvas { width: 100%; height: 100% }			
+		</style>
+		  <link rel="stylesheet" href="css/main.css">
+	</head>
+	<body>
+        
+        <div id="preloader">
+            
+            <div id="preloadBar_wrap">
+                <div id ="preloadBar"></div>
+                <div id="html5Badge"></div>
+            </div>
+        </div>
+        
+
+        
+        <audio id="audiotag1" src="sounds/Superman_Theme.mp3" preload="auto" loop></audio>
+        <audio id="snd_punch" src="sounds/punch.mp3" preload="auto"></audio>      
+        <audio id="snd_voice1" src="sounds/voice1.mp3" preload="auto"></audio>  
+        <audio id="snd_voice2" src="sounds/voice2.mp3" preload="auto"></audio> 
+        <audio id="snd_voice3" src="sounds/voice3.mp3" preload="auto"></audio> 
+        <audio id="snd_voice4" src="sounds/voice4.mp3" preload="auto"></audio> 
+        <audio id="snd_voice5" src="sounds/voice5.mp3" preload="auto"></audio> 
+        <audio id="snd_voice6" src="sounds/voice6.mp3" preload="auto"></audio> 
+        <audio id="snd_voice7" src="sounds/voice7.mp3" preload="auto"></audio> 
+        <audio id="snd_voice8" src="sounds/voice8.mp3" preload="auto" ></audio> 
+	
+		<script src="js/three.min.js"></script>
+		<script src="js/FirstPersonControls.js"></script>
+		<script src="js/THREEx.KeyboardState.js"></script>
+		<script src="js/Tween.js"></script>
+        <script src="js/playerArms.js"></script>
+        <script src="js/City.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.11.3/TweenMax.min.js"></script>
+
+		<script>
+            
+            
+            var isGameInPlay = false;
+            
+            var keyboard = new THREEx.KeyboardState();
+			var scene, camera, renderer;
+			var light, controls;
+			var lastTime;
+			
+
+            //flying properties
+			var currSpeed = 0;
+			var maxSpeed = 1;
+            var acceleration = .15;
+			
+            var arrBoxes;
+            var arrBuildings;
+            var boxesCollected = 0;
+            var totalBoxes;
+            var txtUIBox;
+			
+			
+			//used to get delta time for animations
+            var clock;
+            var delta;
+            
+            
+            
+            var texAnimator_speedFX; 
+            
+            var isColliding;
+            var isTweeningArms = false;
+            var assetsToLoad = 0;
+            var assetsLoaded = 0;
+            
+            
+            //------------------------------o
+            //-- Textures to load
+            //-- used by other components
+            //------------------------------o
+            var texArmL;
+            var texArmR;
+            var texSpeedFX;
+            var tex_uiBacking;
+			var texSuperBox;
+            
+            //-------------------------------o
+            //--- object classes
+            //-------------------------------o
+            var oPlayer;
+            var oCity;
+            
+            $(document).ready(function () {
+                console.log("All scripts ready");
+                preloadImageAssets();
+            });
+            //-----------------------------------------------0
+            //start preload of all required assets
+            
+            
+            //-----------------------------------------------0
+            //-- preload
+            function preloadImageAssets()
+            {
+                 texArmL = THREE.ImageUtils.loadTexture( 'images/armL.png' );
+                 texArmR = THREE.ImageUtils.loadTexture( 'images/armR.png' );
+                 texSpeedFX = new THREE.ImageUtils.loadTexture( 'images/fx.png' );
+                 tex_uiBacking = THREE.ImageUtils.loadTexture( 'images/uiBacking.png' );
+                 texSuperBox = THREE.ImageUtils.loadTexture( 'images/superBox.jpg' );
+                
+                 assetsToLoad = 5;
+                 
+                 texArmL.onload = onLoaded();
+                 texArmL.onload = onLoaded();                
+                 texSpeedFX.onload = onLoaded();
+                 tex_uiBacking.onload = onLoaded();
+                 texSuperBox.onload = onLoaded();
+                
+            }
+            
+            //-----------------------------------------------0
+            //-- loader callbacl
+            function onLoaded()
+            {
+                assetsLoaded++;
+
+                var perc = (assetsLoaded / assetsToLoad) * 1;
+                perc = perc * 75;
+                console.log("perc :"+perc);
+              
+                TweenLite.to(document.getElementById('preloadBar'), .1, {width:perc}); 
+                
+                if(assetsToLoad == assetsLoaded){
+                console.log("onLoaded: all assets loaded");
+                setTimeout(init, 2000); //give a little delay as there is a GPU lag which causes frame drop
+                }
+                
+                
+            }
+            
+            
+            //-------------------------------------------------o
+            // Init the game
+			function init() 
+            {
+                console.log("init()");
+               
+                document.getElementById('preloader').remove();
+                
+                totalBoxes = 100;
+                arrBoxes = new Array();
+                arrBuildings = new Array();
+                clock = new THREE.Clock();
+
+                
+               //play the main music track 
+               window.setTimeout(function(){
+                document.getElementById('audiotag1').volume = 0.3;
+                document.getElementById('audiotag1').play();
+        
+               },3000);
+
+
+				renderer = new THREE.WebGLRenderer( { antialias: false, alpha: false } );
+				renderer.setClearColor( 0xd8e7ff );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 3000 );
+				camera.position.y = 80;
+
+				controls = new THREE.FirstPersonControls( camera );
+				controls.movementSpeed = 30;
+				controls.lookSpeed = 0.1;
+				//controls.lookVertical = true;
+				//controls.autoForward = true;
+				controls.moveLeft = false;
+				controls.moveRight = false;
+				//controls.moveBackward = false;
+				scene = new THREE.Scene();
+				scene.fog = new THREE.FogExp2( 0xd0e0f0, 0.0025 );
+
+				light = new THREE.HemisphereLight( 0xfffff0, 0x101020, 1.25 );
+				light.position.set( 0.75, 1, 0.25 );
+				scene.add( light );
+
+				//-----------------------------------------o
+				//--- add the floor plane 200x2000
+				//-----------------------------------------o
+				var plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshBasicMaterial( { color: 0x101018 } ) );
+				plane.rotation.x = - 90 * Math.PI / 180;
+				scene.add( plane );
+
+                
+                //Add the city
+                oCity = new City();
+              
+				
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.left = '0';
+				info.style.top = '15px';
+				info.style.width = '100%';
+				info.style.color = 'rgba(0,0,64,0.5)';
+				info.style.textAlign = 'center';
+				info.textContent = 'click and hold to fly';
+				document.body.appendChild( info );
+
+                
+				lastTime = performance.now();
+				
+				
+             scene.add( camera );
+             camera.position.z = 20;
+                
+                
+			/* ---------- Add a cubes --------------*/
+			//set quality of the texture when it is viewed on a perspective (not essential)
+			texSuperBox.anisotropy = renderer.getMaxAnisotropy();    
+           var material = new THREE.MeshBasicMaterial( { map: texSuperBox } );     
+          
+                
+                for ( var j = 0; j < totalBoxes; j ++ ) 
+                {
+                    //add the geometry, this is an object that contains all the verticies and faces. pass in the size of the faces
+                    var geometry = new THREE.CubeGeometry(10,10,10);
+        
+                    
+        
+                    //create the Mesh using the geomety and material
+                    var cube = new THREE.Mesh( geometry, material );              
+                     
+                    cube.scale.x = .6;
+                    cube.scale.y = .6;
+                    cube.scale.z = .6;
+                    cube.scale.y = .6;
+                    cube.position.x = Math.floor( Math.random() * 200 - 100 ) * 10;//Math.floor((Math.random()*1000)+1); 
+                    cube.position.z = Math.floor( Math.random() * 200 - 100 ) * 10;//Math.floor((Math.random()*1000)+1); 
+                    cube.position.y = Math.floor((Math.random()*100)+50);  
+                    scene.add(cube);
+                    arrBoxes.push(cube);
+                }
+            
+               
+                init_UI();
+                //--------------------------------o
+                // Create player
+                //--------------------------------o
+                oPlayer = new Player();
+                oPlayer.x = 200;
+                oPlayer.y = 300;
+                scene.add(oPlayer);
+                
+                
+                window.onmouseout = on_windowMouseOut;
+                window.onmouseover = on_windowMouseOver;
+              
+                
+                isGameInPlay = true;
+                animate();
+                
+            }
+            
+            function on_windowMouseOut()
+            {
+               controls.freeze = true; 
+            }
+            function on_windowMouseOver()
+            {
+               controls.freeze = false; 
+            }            
+            
+            
+			//---------------------------------o
+			// render loop 
+			//--------------------------------o
+			function animate() {
+
+			delta = clock.getDelta(); 
+
+			console.log("(currSpeed/maxSpeed * 1) :"+currSpeed);
+	           oPlayer.update();
+               onUpdate();
+                
+				requestAnimationFrame( animate );
+
+				var time = performance.now() / 1000;
+
+				controls.update( time - lastTime );
+				renderer.render( scene, camera );
+
+                TWEEN.update();
+				lastTime = time;
+						
+			}
+            
+			//---------------------------------o
+			// create the window texture 
+			//--------------------------------o
+			function generateTexture() {
+
+				// build a small canvas 32x64 and paint it in white
+				var canvas = document.createElement( 'canvas' );
+				canvas.width = 32;
+				canvas.height = 64;
+
+				var context = canvas.getContext( '2d' );
+				// plain it in white
+				context.fillStyle = '#ffffff';
+				context.fillRect( 0, 0, 32, 64 );
+
+ 				 // draw the window rows - with a small noise to simulate light variations in each room
+  				for ( var y = 2; y < 64; y += 2 ) {
+
+					for ( var x = 0; x < 32; x += 2 ) {
+
+						var value = Math.floor( Math.random() * 64 );
+						context.fillStyle = 'rgb(' + [ value, value, value ].join( ',' )  + ')';
+						context.fillRect( x, y, 2, 1 );
+
+					}
+
+				}
+
+			  // build a bigger canvas and copy the small one in it
+ 			  // This is a trick to upscale the texture without filtering
+				var canvas2 = document.createElement( 'canvas' );
+				canvas2.width = 512;
+				canvas2.height = 1024;
+
+				var context = canvas2.getContext( '2d' );
+
+				 // disable smoothing
+				context.imageSmoothingEnabled = false;
+				context.webkitImageSmoothingEnabled = false;
+				context.mozImageSmoothingEnabled = false;
+				context.drawImage( canvas, 0, 0, canvas2.width, canvas2.height );
+				
+				// return the just built canvas2
+				return canvas2;
+
+			}
+            
+            
+            function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) 
+            {	
+                // note: texture passed by reference, will be updated by the update function.
+                    
+                this.tilesHorizontal = tilesHoriz;
+                this.tilesVertical = tilesVert;
+                // how many images does this spritesheet contain?
+                //  usually equals tilesHoriz * tilesVert, but not necessarily,
+                //  if there at blank tiles at the bottom of the spritesheet. 
+                this.numberOfTiles = numTiles;
+                texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+                texture.repeat.set( 1 / this.tilesHorizontal, 1 / this.tilesVertical );
+            
+                // how long should each image be displayed?
+                this.tileDisplayDuration = tileDispDuration;
+            
+                // how long has the current image been displayed?
+                this.currentDisplayTime = 0;
+            
+                // which image is currently being displayed?
+                this.currentTile = 0;
+                    
+                this.update = function( milliSec )
+                {
+                    this.currentDisplayTime += milliSec;
+                    while (this.currentDisplayTime > this.tileDisplayDuration)
+                    {
+                        this.currentDisplayTime -= this.tileDisplayDuration;
+                        this.currentTile++;
+                        if (this.currentTile == this.numberOfTiles)
+                            this.currentTile = 0;
+                        var currentColumn = this.currentTile % this.tilesHorizontal;
+                        texture.offset.x = currentColumn / this.tilesHorizontal;
+                        var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
+                        texture.offset.y = currentRow / this.tilesVertical;
+                    }
+                };
+            }		            
+            
+            //-----------------------------------o
+            //--------Init UI
+            //-----------------------------------o   
+            function init_UI()
+            {
+				
+				var mat_uiBacking  = new THREE.SpriteMaterial( { map: tex_uiBacking, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.topLeft } );
+				// suggested- alignment: THREE.SpriteAlignment.center  for targeting-style icon
+				//			  alignment: THREE.SpriteAlignment.topLeft for cursor-pointer style icon
+				
+				var uiBacking = new THREE.Sprite( mat_uiBacking );
+				uiBacking.scale.set(375, 117, 1);
+				uiBacking.position.set( 0, 0 , 0 ); //x,y,z
+
+				scene.add( uiBacking );  
+                
+                
+				txtUIBox = document.createElement( 'div' );
+				txtUIBox.style.position = 'absolute';
+				txtUIBox.style.left = '130';
+				txtUIBox.style.top = '35px';
+                txtUIBox.style.fontFamily="Impact,Charcoal,sans-serif";
+				//txtUIBox.style.width = '100%';
+				txtUIBox.style.color = '000000';
+				txtUIBox.style.textAlign = 'center';
+                txtUIBox.style.fontSize = '40px';
+				txtUIBox.textContent = '0  of  '+totalBoxes;
+				document.body.appendChild( txtUIBox );
+            }
+            
+            
+            function onUpdate()
+            {
+                if(!isGameInPlay)
+                return;
+                
+                if(controls.speed == controls.maxSpeed && !isColliding)
+                oPlayer.showSpeedFX();   
+                else
+                oPlayer.hideSpeedFX(); 
+                
+				//------------------------------------------------o
+                //-- Key Board Events, Boost if shift or space is down
+                //------------------------------------------------o
+				//if(( keyboard.pressed("shift") || keyboard.pressed("space") ) && !isColliding)
+
+
+                //-----------------------------------------------o
+				//--- Check for collision using a distance based system
+                //------------------------------------------------o
+				
+				
+                
+                for(var i = 0; i < arrBoxes.length; i++)
+                {
+                    var box = arrBoxes[i];
+                    box.rotation.y += .05;
+                    
+                    if((box.position.z > camera.position.z - 5 && box.position.z < camera.position.z + 5) &&
+                       (box.position.y > camera.position.y - 5 && box.position.y < camera.position.y + 5) &&
+                       (box.position.x > camera.position.x - 5 && box.position.x < camera.position.x + 5))
+                    {
+					    isColliding = true;
+                        scene.remove(box);
+                        arrBoxes.splice(i, 1);
+                        oPlayer.punch();
+                        boxesCollected ++;
+                        
+                         console.log("boxesCollected:"+boxesCollected);
+                        txtUIBox.textContent = boxesCollected+'  of  '+totalBoxes;
+                        window.setTimeout(function(){
+                            var num = Math.floor((Math.random()*8)+1);
+                        document.getElementById('snd_voice'+num).play();
+                            //document.getElementById('snd_voice'+num).volume = 1.3;
+                
+                        },500);
+						
+						window.setTimeout(function(){isColliding = false}, 1000);
+                        
+                        if(boxesCollected == 2)
+                        gameWon();
+                    }
+                    
+                }  
+                
+            }
+            
+            //-----------------------------------o
+            //-------- Game Won
+            //-----------------------------------o               
+            function gameWon()
+            {
+                console.log("game won!");
+               // isGameInPlay = false;
+            }            
+            
+
+		</script>
+
+
+
+
+</body></html>
