@@ -52,6 +52,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 	
 		<script src="js/three.min.js"></script>
 		<script src="js/FirstPersonControls.js"></script>
+		<script src="js/Detector.js"></script>
 		<script src="js/THREEx.KeyboardState.js"></script>
         <!--<script src="js/THREEx.FullScreen.js"></script>-->
         <!--<script src="js/THREEx.WindowResize.js"></script>-->
@@ -170,9 +171,11 @@ This experiment contains code from @MrDoobs procedural city example, which has b
             {
                 console.log("init()");
                
+                if ( Detector.webgl )
+                {
                 document.getElementById('preloader').remove();
                 document.getElementById('UI').style.display = 'block';
-                
+                }
               //  window.addEventListener( 'resize', onWindowResize, false );
               //  window.onresize = onWindowResize
 
