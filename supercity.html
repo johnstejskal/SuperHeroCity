@@ -1,32 +1,44 @@
 
-<!-- based on Mr Doobs procedural city http://www.mrdoob.com/lab/javascript/webgl/city/01/ -->
+<!-- Super hero city is an experiment learning project by John Stekjskal  (Twitter @johnstejskal)
+This experiment contains code from @MrDoobs procedural city example, which has been modified to suit the needs of this experiment -->
+
+<!-- www.johnstejskal.com -->
+
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 		<title>Super City</title>
 		<style>
 			body {
-				background-color: #d8e7ff;
+				background-color: #000000;
 				font-family: Monospace;
 				//cursor: url(cursor.png), auto;
 				margin: 0;
 				overflow: hidden;
 			}
 
-			canvas { width: 100%; height: 100% }			
+			canvas { width: 100%; height: 110% }			
 		</style>
 		  <link rel="stylesheet" href="css/main.css">
 	</head>
 	<body>
         
+        <!---------------------------------------------> 
+        <!-- DOM based prelaoder -->
         <div id="preloader">
-            
-            <div id="preloadBar_wrap">
+            <div id="info_wrap">
                 <div id ="preloadBar"></div>
                 <div id="html5Badge"></div>
+                <div id="webgLogo"></div>
+                <div id="browsers">
+                    <div id="top"><p>recommended browsers</p></div>
+                    <div id="left"></div>
+                    <div id="right"></div>
+                </div>
+                
             </div>
         </div>
-        
+        <!-- Preloader End -->
 
-        
+
         <audio id="audiotag1" src="sounds/Superman_Theme.mp3" preload="auto" loop></audio>
         <audio id="snd_punch" src="sounds/punch.mp3" preload="auto"></audio>      
         <audio id="snd_voice1" src="sounds/voice1.mp3" preload="auto"></audio>  
@@ -41,8 +53,10 @@
 		<script src="js/three.min.js"></script>
 		<script src="js/FirstPersonControls.js"></script>
 		<script src="js/THREEx.KeyboardState.js"></script>
+        <!--<script src="js/THREEx.FullScreen.js"></script>-->
+        <!--<script src="js/THREEx.WindowResize.js"></script>-->
 		<script src="js/Tween.js"></script>
-        <script src="js/playerArms.js"></script>
+        <script src="js/Player.js"></script>
         <script src="js/City.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
         
@@ -50,7 +64,11 @@
 
 		<script>
             
-            
+            $(window).resize(function() {
+               // $( "body" ).prepend( "<div>" + $( window ).width() + "</div>" );
+                console.log("resezing()");
+                onWindowResize();
+            })
             var isGameInPlay = false;
             
             var keyboard = new THREEx.KeyboardState();
@@ -60,7 +78,7 @@
 			
 
             //flying properties
-			var currSpeed = 0;
+			//var currSpeed = 0;
 			var maxSpeed = 1;
             var acceleration = .15;
 			
@@ -68,7 +86,10 @@
             var arrBuildings;
             var boxesCollected = 0;
             var totalBoxes;
+            
+            
             var txtUIBox;
+            var uiBacking;
 			
 			
 			//used to get delta time for animations
@@ -113,31 +134,31 @@
             //-- preload
             function preloadImageAssets()
             {
+                
                  texArmL = THREE.ImageUtils.loadTexture( 'images/armL.png' );
                  texArmR = THREE.ImageUtils.loadTexture( 'images/armR.png' );
                  texSpeedFX = new THREE.ImageUtils.loadTexture( 'images/fx.png' );
-                 tex_uiBacking = THREE.ImageUtils.loadTexture( 'images/uiBacking.png' );
                  texSuperBox = THREE.ImageUtils.loadTexture( 'images/superBox.jpg' );
-                
-                 assetsToLoad = 5;
+                 texskyBox = THREE.ImageUtils.loadTexture( 'images/sky.jpg' );
+                 assetsToLoad = 4;
                  
                  texArmL.onload = onLoaded();
                  texArmL.onload = onLoaded();                
                  texSpeedFX.onload = onLoaded();
-                 tex_uiBacking.onload = onLoaded();
                  texSuperBox.onload = onLoaded();
                 
             }
             
             //-----------------------------------------------0
-            //-- loader callbacl
+            //-- loader callback
+            //-----------------------------------------------0
             function onLoaded()
             {
                 assetsLoaded++;
 
                 var perc = (assetsLoaded / assetsToLoad) * 1;
                 perc = perc * 75;
-                console.log("perc :"+perc);
+                
               
                 TweenLite.to(document.getElementById('preloadBar'), .1, {width:perc}); 
                 
@@ -152,11 +173,17 @@
             
             //-------------------------------------------------o
             // Init the game
+             //-----------------------------------------------0
 			function init() 
             {
                 console.log("init()");
                
                 document.getElementById('preloader').remove();
+                document.getElementById('UI').style.display = 'block';
+                
+              //  window.addEventListener( 'resize', onWindowResize, false );
+              //  window.onresize = onWindowResize
+
                 
                 totalBoxes = 100;
                 arrBoxes = new Array();
@@ -167,7 +194,7 @@
                //play the main music track 
                window.setTimeout(function(){
                 document.getElementById('audiotag1').volume = 0.3;
-                document.getElementById('audiotag1').play();
+               // document.getElementById('audiotag1').play();
         
                },3000);
 
@@ -177,8 +204,16 @@
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				document.body.appendChild( renderer.domElement );
 
-				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 3000 );
+				scene = new THREE.Scene();
+				scene.fog = new THREE.FogExp2( 0xd0e0f0, 0.0025 );  
+                
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+				//camera = new THREE.PerspectiveCamera( 40, window.innerHeight/2, 1, 3000 );
 				camera.position.y = 80;
+                scene.add( camera );
+                camera.position.z = 20;
+                camera.position.x = 0;
+                camera.lookAt(scene.position);
 
 				controls = new THREE.FirstPersonControls( camera );
 				controls.movementSpeed = 30;
@@ -188,8 +223,7 @@
 				controls.moveLeft = false;
 				controls.moveRight = false;
 				//controls.moveBackward = false;
-				scene = new THREE.Scene();
-				scene.fog = new THREE.FogExp2( 0xd0e0f0, 0.0025 );
+
 
 				light = new THREE.HemisphereLight( 0xfffff0, 0x101020, 1.25 );
 				light.position.set( 0.75, 1, 0.25 );
@@ -214,18 +248,15 @@
 				info.style.width = '100%';
 				info.style.color = 'rgba(0,0,64,0.5)';
 				info.style.textAlign = 'center';
-				info.textContent = 'click and hold to fly';
+				info.textContent = '';
 				document.body.appendChild( info );
 
                 
 				lastTime = performance.now();
 				
-				
-             scene.add( camera );
-             camera.position.z = 20;
-                
-                
-			/* ---------- Add a cubes --------------*/
+			 //-----------------------------------------------0	
+		  	/* ---------- Add Collectable cubes --------------*/
+             //-----------------------------------------------0
 			//set quality of the texture when it is viewed on a perspective (not essential)
 			texSuperBox.anisotropy = renderer.getMaxAnisotropy();    
            var material = new THREE.MeshBasicMaterial( { map: texSuperBox } );     
@@ -289,7 +320,7 @@
 
 			delta = clock.getDelta(); 
 
-			console.log("(currSpeed/maxSpeed * 1) :"+currSpeed);
+			//console.log("(currSpeed/maxSpeed * 1) :"+currSpeed);
 	           oPlayer.update();
                onUpdate();
                 
@@ -397,29 +428,7 @@
             //-----------------------------------o   
             function init_UI()
             {
-				
-				var mat_uiBacking  = new THREE.SpriteMaterial( { map: tex_uiBacking, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.topLeft } );
-				// suggested- alignment: THREE.SpriteAlignment.center  for targeting-style icon
-				//			  alignment: THREE.SpriteAlignment.topLeft for cursor-pointer style icon
-				
-				var uiBacking = new THREE.Sprite( mat_uiBacking );
-				uiBacking.scale.set(375, 117, 1);
-				uiBacking.position.set( 0, 0 , 0 ); //x,y,z
-
-				scene.add( uiBacking );  
-                
-                
-				txtUIBox = document.createElement( 'div' );
-				txtUIBox.style.position = 'absolute';
-				txtUIBox.style.left = '130';
-				txtUIBox.style.top = '35px';
-                txtUIBox.style.fontFamily="Impact,Charcoal,sans-serif";
-				//txtUIBox.style.width = '100%';
-				txtUIBox.style.color = '000000';
-				txtUIBox.style.textAlign = 'center';
-                txtUIBox.style.fontSize = '40px';
-				txtUIBox.textContent = '0  of  '+totalBoxes;
-				document.body.appendChild( txtUIBox );
+				txtUIBox = document.getElementById( 'txtUIBox' );
             }
             
             
@@ -433,18 +442,41 @@
                 else
                 oPlayer.hideSpeedFX(); 
                 
+                if(controls.speed < 0.3 && !controls.isMouseDown)
+                oPlayer.hideArms();   
+                else if(controls.speed > 0.01)
+                oPlayer.showArms(); 
+                
+                
+              
+               
+                
 				//------------------------------------------------o
                 //-- Key Board Events, Boost if shift or space is down
                 //------------------------------------------------o
 				//if(( keyboard.pressed("shift") || keyboard.pressed("space") ) && !isColliding)
 
+                
+                      if(camera.position.z > 900)
+                       camera.position.z = 900                      
+                     else if(camera.position.z < -900)
+                       camera.position.z = -900
 
+                       if(camera.position.x > 900)
+                       camera.position.xmlStandalone = 900                      
+                     else if(camera.position.x < -900)
+                       camera.position.x = -900    
+                       
+                       
+                    if(camera.position.y < 10 )
+                       camera.position.y = 10    
+                    else if(camera.position.y > 200 )
+                       camera.position.y = 200      
+                
                 //-----------------------------------------------o
 				//--- Check for collision using a distance based system
                 //------------------------------------------------o
 				
-				
-                
                 for(var i = 0; i < arrBoxes.length; i++)
                 {
                     var box = arrBoxes[i];
@@ -478,7 +510,19 @@
                 }  
                 
             }
+             //-----------------------------------------------0
+             //--Window resize event handler------------------0
+             //-----------------------------------------------0
+            function onWindowResize(){
             
+                console.log("onResize Event");
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+            
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                oPlayer.onResize();
+            
+            }
             //-----------------------------------o
             //-------- Game Won
             //-----------------------------------o               
@@ -492,6 +536,8 @@
 		</script>
 
 
-
+        <div id="UI">
+            <div id="txtUIBox">0 of 100</div>
+        </div>
 
 </body></html>

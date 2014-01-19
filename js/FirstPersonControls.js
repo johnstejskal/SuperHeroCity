@@ -50,6 +50,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.viewHalfX = 0;
 	this.viewHalfY = 0;
 
+    this.isMouseDown = false;
     
     
     //------------o
@@ -90,9 +91,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.onMouseDown = function ( event ) {
 
-        
-
-        
+        this.isMouseDown = true;
 		if ( this.domElement !== document ) {
 
 			this.domElement.focus();
@@ -119,6 +118,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.onMouseUp = function ( event ) {
 
+        this.isMouseDown = false;
 		event.preventDefault();
 		event.stopPropagation();
 

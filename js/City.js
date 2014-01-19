@@ -28,11 +28,69 @@ function City()
 				var light = new THREE.Color( 0xffffff );
 				var shadow = new THREE.Color( 0x303050 );
 
+    
+    
+    
+               /* ---------- Add a cube --------------
+ 
+            //add the geometry, this is an object that contains all the verticies and faces. pass in the size of the faces
+            var geometry = new THREE.CubeGeometry(10,10,10);
+ 
+            //create the texture by loading our image from file
+            var texture = THREE.ImageUtils.loadTexture( 'images/sky-xpos.jpg' );
+    
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.x = 5;
+            texture.repeat.y = 5;    
+    
+            //set quality of the texture when it is viewed on a perspective (not essential)
+            texture.anisotropy = renderer.getMaxAnisotropy();
+ 
+            var material = new THREE.MeshBasicMaterial( { map: texture } );
+            material.side = THREE.DoubleSide;
 
+ 
+            //create the Mesh using the geometry and material
+            var cube = new THREE.Mesh( geometry, material );
+            cube.scale.set(200,200,200)
+            cube.position.y = 100;
+            //add the cube to the scene, defaults to coords 0,0,0 (x,y,z)
+            scene.add( cube ); 
+    
+    
+    */
+                ////////////
+                // SKYBox //
+                ////////////
+              /*  
+                // axes
+                var axes = new THREE.AxisHelper(100);
+                scene.add( axes );
+                
+                var imagePrefix = "images/sky-";
+                var directions  = ["xpos", "xpos", "xpos", "xpos", "xpos", "xpos"];
+               // var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
+                var imageSuffix = ".jpg";
+                var skyGeometry = new THREE.CubeGeometry( 5000, 5000, 5000 );	
+                
+                var materialArray = [];
+                for (var i = 0; i < 6; i++)
+                    materialArray.push( new THREE.MeshBasicMaterial({
+                        map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+                        side: THREE.BackSide
+                    }));
+                var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+                var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+                scene.add( skyBox );
+    
+    */
+                //--------------------o
+    
 				//-----------------------------------------o
 				//---- Create Buildings
 				//-----------------------------------------o
-				for ( var i = 0; i < 15000; i ++ ) {
+				for ( var i = 0; i < 11000; i ++ ) {
 					
 					// establish the base color for the buildingMesh
 					var value = 1 - Math.random() * Math.random();
