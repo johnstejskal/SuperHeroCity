@@ -124,7 +124,7 @@ function City()
 
 					//mer
 					THREE.GeometryUtils.merge( city, building );
-                    arrBuildings.push(building);
+                   // arrBuildings.push(building);
 
 				}
 				// build the mesh

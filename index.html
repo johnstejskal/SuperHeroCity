@@ -5,7 +5,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 <!-- www.johnstejskal.com -->
 
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-		<title>Super City</title>
+		<title>Super Hero City</title>
 		<style>
 			body {
 				background-color: #000000;
@@ -64,18 +64,13 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 
 		<script>
             
-            $(window).resize(function() {
-               // $( "body" ).prepend( "<div>" + $( window ).width() + "</div>" );
-                console.log("resezing()");
-                onWindowResize();
-            })
+         
             var isGameInPlay = false;
             
             var keyboard = new THREEx.KeyboardState();
 			var scene, camera, renderer;
 			var light, controls;
 			var lastTime;
-			
 
             //flying properties
 			//var currSpeed = 0;
@@ -91,12 +86,9 @@ This experiment contains code from @MrDoobs procedural city example, which has b
             var txtUIBox;
             var uiBacking;
 			
-			
 			//used to get delta time for animations
             var clock;
             var delta;
-            
-            
             
             var texAnimator_speedFX; 
             
@@ -194,7 +186,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                //play the main music track 
                window.setTimeout(function(){
                 document.getElementById('audiotag1').volume = 0.3;
-               // document.getElementById('audiotag1').play();
+                document.getElementById('audiotag1').play();
         
                },3000);
 
@@ -261,13 +253,10 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 			texSuperBox.anisotropy = renderer.getMaxAnisotropy();    
            var material = new THREE.MeshBasicMaterial( { map: texSuperBox } );     
           
-                
                 for ( var j = 0; j < totalBoxes; j ++ ) 
                 {
                     //add the geometry, this is an object that contains all the verticies and faces. pass in the size of the faces
                     var geometry = new THREE.CubeGeometry(10,10,10);
-        
-                    
         
                     //create the Mesh using the geomety and material
                     var cube = new THREE.Mesh( geometry, material );              
@@ -294,9 +283,32 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                 scene.add(oPlayer);
                 
                 
-                window.onmouseout = on_windowMouseOut;
-                window.onmouseover = on_windowMouseOver;
-              
+            //------------------------------o
+            // some window events, jquery used for simplicity
+            //-------------------------------o
+             $(function() {
+                $(window).focus(function() {
+                    on_windowMouseOver();
+                });
+            
+                $(window).blur(function() {
+                on_windowMouseOut()
+                });
+            });
+                
+            $(window).resize(function() {
+                console.log("resezing()");
+                onWindowResize();
+            })
+                        
+            $('body').mouseleave(function() {
+                
+                on_windowMouseOut();
+            })
+            $('body').mouseenter(function() {
+               
+                on_windowMouseOver();
+            })   
                 
                 isGameInPlay = true;
                 animate();
@@ -305,13 +317,25 @@ This experiment contains code from @MrDoobs procedural city example, which has b
             
             function on_windowMouseOut()
             {
+              console.log("onMouse leave");
                controls.freeze = true; 
+                stopSound()
             }
             function on_windowMouseOver()
             {
                controls.freeze = false; 
+               startSound()
             }            
             
+            function stopSound()
+            {
+                document.getElementById('audiotag1').volume = 0;
+            }
+                        
+            function startSound()
+            {
+                document.getElementById('audiotag1').volume = 0.3;
+            }
             
 			//---------------------------------o
 			// render loop 
@@ -457,13 +481,16 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 				//if(( keyboard.pressed("shift") || keyboard.pressed("space") ) && !isColliding)
 
                 
+               // console.log("camera.position.z:"+camera.position.z)
+               // console.log("camera.position.x:"+camera.position.x)
+                
                       if(camera.position.z > 900)
                        camera.position.z = 900                      
                      else if(camera.position.z < -900)
                        camera.position.z = -900
 
                        if(camera.position.x > 900)
-                       camera.position.xmlStandalone = 900                      
+                       camera.position.x = 900                      
                      else if(camera.position.x < -900)
                        camera.position.x = -900    
                        
@@ -539,5 +566,19 @@ This experiment contains code from @MrDoobs procedural city example, which has b
         <div id="UI">
             <div id="txtUIBox">0 of 100</div>
         </div>
+        
+        
+<script type="text/javascript">
 
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-37619121-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
 </body></html>
