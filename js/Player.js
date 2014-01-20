@@ -11,19 +11,24 @@ Player.prototype.hasArms = false;
 function Player()
 {
     //Left Hand Sprite
-    var handMaterial = new THREE.SpriteMaterial( { map: texArmL, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.center } );
+    var handMaterial = new THREE.SpriteMaterial( { map: texArmL, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomCenter } );
     var armLSprite = new THREE.Sprite( handMaterial );
     this.armLSprite = armLSprite;
     this.armLSprite.scale.set(676, 439, 1);
-    this.armLSprite.position.set( window.innerWidth/2- 400, window.innerHeight+500 , 0 );
+    //this.armLSprite.position.set( window.innerWidth/2- 400, window.innerHeight+500 , 0 );
+    this.armLSprite.position.set( window.innerWidth/2- 400, document.documentElement.clientHeight+500 , 0 );
     scene.add( this.armLSprite );
  
      //Right Hand Sprite
-    var handMaterialR = new THREE.SpriteMaterial( { map: texArmR, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.center } );
+    var handMaterialR = new THREE.SpriteMaterial( { map: texArmR, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomCenter } );  
+    // handMaterialR.uvOffset.y = .2;
+    //var handMaterialR = new THREE.SpriteMaterial( { map: texArmR, useScreenCoordinates: true, alignment: //THREE.SpriteAlignment.center } );
+   
     var armRSprite = new THREE.Sprite( handMaterialR );
     this.armRSprite = armRSprite;
     this.armRSprite.scale.set(676, 439, 1);
-    this.armRSprite.position.set(window.innerWidth/2+400, window.innerHeight+500, 0 );
+   // this.armRSprite.position.set(window.innerWidth/2+400, window.innerHeight+500, 0 );
+    this.armRSprite.position.set(window.innerWidth/2+400, document.documentElement.clientHeight+500, 0 );
     scene.add(  this.armRSprite );  
 
     this.animateSway();  
@@ -121,13 +126,14 @@ Player.prototype.hideSpeedFX = function()
 //---------------------------------------o
 Player.prototype.hideArms = function()
 {
+    
     if(this.hasArms)
     {
         this.hasArms = false;
    // TweenLite.killTweensOf(this.armLSprite.position)
    // TweenLite.killTweensOf(this.armRSprite.position)   
-    TweenLite.to(this.armLSprite.position, 1, {y:window.innerHeight+ 500, ease:Cubic.easeInOut}); 
-    TweenLite.to(this.armRSprite.position, 1, {y:window.innerHeight+ 500, ease:Cubic.easeInOut}); 
+    TweenLite.to(this.armLSprite.position, 1, {y:$('body').innerHeight() + 500, ease:Cubic.easeInOut}); 
+    TweenLite.to(this.armRSprite.position, 1, {y:$('body').innerHeight() + 500, ease:Cubic.easeInOut}); 
     }
                  
 }
@@ -137,13 +143,17 @@ Player.prototype.hideArms = function()
 //---------------------------------------o
 Player.prototype.showArms = function()
 {
+    console.log("window.innerHeight :"+window.innerHeight);
+    var h = $(window).height();
     if(!this.hasArms)
     {    
         this.hasArms = true;
    // TweenLite.killTweensOf(this.armLSprite.position)
    // TweenLite.killTweensOf(this.armRSprite.position)
-    TweenLite.to(this.armLSprite.position, 2, {y: window.innerHeight-100, ease:Cubic.easeInOut}); 
-    TweenLite.to(this.armRSprite.position, 2, {y: window.innerHeight-100, ease:Cubic.easeInOut}); 
+    //TweenLite.to(this.armLSprite.position, 2, {y: h - 100, ease:Cubic.easeInOut}); 
+    TweenLite.to(this.armLSprite.position, 2, {y: window.innerHeight+50, ease:Cubic.easeInOut}); 
+   // TweenLite.to(this.armRSprite.position, 2, {y: h - 100, ease:Cubic.easeInOut}); 
+    TweenLite.to(this.armRSprite.position, 2, {y: window.innerHeight+50, ease:Cubic.easeInOut}); 
     }              
                          
 }

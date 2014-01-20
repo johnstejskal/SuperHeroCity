@@ -15,8 +15,9 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 				overflow: hidden;
 			}
 
-			canvas { width: 100%; height: 110% }			
+					
 		</style>
+		  <link rel="stylesheet" href="css/normalize.css">
 		  <link rel="stylesheet" href="css/main.css">
 	</head>
 	<body>
@@ -67,7 +68,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
             
          
             var isGameInPlay = false;
-            
+            var isMuted = false;
             var keyboard = new THREEx.KeyboardState();
 			var scene, camera, renderer;
 			var light, controls;
@@ -86,6 +87,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
             
             var txtUIBox;
             var uiBacking;
+			var btnMute;
 			
 			//used to get delta time for animations
             var clock;
@@ -119,9 +121,9 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                 console.log("All scripts ready");
                 preloadImageAssets();
             });
+            
             //-----------------------------------------------0
             //start preload of all required assets
-            
             
             //-----------------------------------------------0
             //-- preload
@@ -160,7 +162,6 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                 setTimeout(init, 2000); //give a little delay as there is a GPU lag which causes frame drop
                 }
                 
-                
             }
             
             
@@ -176,9 +177,6 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                 document.getElementById('preloader').remove();
                 document.getElementById('UI').style.display = 'block';
                 }
-              //  window.addEventListener( 'resize', onWindowResize, false );
-              //  window.onresize = onWindowResize
-
                 
                 totalBoxes = 100;
                 arrBoxes = new Array();
@@ -268,8 +266,8 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                     cube.scale.y = .6;
                     cube.scale.z = .6;
                     cube.scale.y = .6;
-                    cube.position.x = Math.floor( Math.random() * 200 - 100 ) * 10;//Math.floor((Math.random()*1000)+1); 
-                    cube.position.z = Math.floor( Math.random() * 200 - 100 ) * 10;//Math.floor((Math.random()*1000)+1); 
+                    cube.position.x = Math.floor( Math.random() * 200 - 100 ) * 9;
+                    cube.position.z = Math.floor( Math.random() * 200 - 100 ) * 9;
                     cube.position.y = Math.floor((Math.random()*100)+50);  
                     scene.add(cube);
                     arrBoxes.push(cube);
@@ -285,7 +283,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                 oPlayer.y = 300;
                 scene.add(oPlayer);
                 
-                
+ 
             //------------------------------o
             // some window events, jquery used for simplicity
             //-------------------------------o
@@ -333,11 +331,16 @@ This experiment contains code from @MrDoobs procedural city example, which has b
             function stopSound()
             {
                 document.getElementById('audiotag1').volume = 0;
+                 $('#mute').css("background-position", "right")
             }
                         
             function startSound()
             {
+                if(isMuted)
+                 return;
+                
                 document.getElementById('audiotag1').volume = 0.3;
+                 $('#mute').css("background-position", "left")
             }
             
 			//---------------------------------o
@@ -347,7 +350,6 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 
 			delta = clock.getDelta(); 
 
-			//console.log("(currSpeed/maxSpeed * 1) :"+currSpeed);
 	           oPlayer.update();
                onUpdate();
                 
@@ -363,53 +365,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
 						
 			}
             
-			//---------------------------------o
-			// create the window texture 
-			//--------------------------------o
-			function generateTexture() {
 
-				// build a small canvas 32x64 and paint it in white
-				var canvas = document.createElement( 'canvas' );
-				canvas.width = 32;
-				canvas.height = 64;
-
-				var context = canvas.getContext( '2d' );
-				// plain it in white
-				context.fillStyle = '#ffffff';
-				context.fillRect( 0, 0, 32, 64 );
-
- 				 // draw the window rows - with a small noise to simulate light variations in each room
-  				for ( var y = 2; y < 64; y += 2 ) {
-
-					for ( var x = 0; x < 32; x += 2 ) {
-
-						var value = Math.floor( Math.random() * 64 );
-						context.fillStyle = 'rgb(' + [ value, value, value ].join( ',' )  + ')';
-						context.fillRect( x, y, 2, 1 );
-
-					}
-
-				}
-
-			  // build a bigger canvas and copy the small one in it
- 			  // This is a trick to upscale the texture without filtering
-				var canvas2 = document.createElement( 'canvas' );
-				canvas2.width = 512;
-				canvas2.height = 1024;
-
-				var context = canvas2.getContext( '2d' );
-
-				 // disable smoothing
-				context.imageSmoothingEnabled = false;
-				context.webkitImageSmoothingEnabled = false;
-				context.mozImageSmoothingEnabled = false;
-				context.drawImage( canvas, 0, 0, canvas2.width, canvas2.height );
-				
-				// return the just built canvas2
-				return canvas2;
-
-			}
-            
             
             function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) 
             {	
@@ -456,6 +412,22 @@ This experiment contains code from @MrDoobs procedural city example, which has b
             function init_UI()
             {
 				txtUIBox = document.getElementById( 'txtUIBox' );
+				btnMute = document.getElementById( 'mute' );
+                btnMute.style.display = 'block';
+				$( '#mute' ).click(function() {
+					
+                    if(!isMuted){
+                         isMuted = true ; 
+                    stopSound(); 
+                     
+                     $('#mute').css("background-position", "right")
+                    }else{
+                        isMuted = false; 
+                    startSound();
+                         
+                    }
+
+                 });  
             }
             
             
@@ -474,9 +446,6 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                 else if(controls.speed > 0.01)
                 oPlayer.showArms(); 
                 
-                
-              
-               
                 
 				//------------------------------------------------o
                 //-- Key Board Events, Boost if shift or space is down
@@ -569,6 +538,7 @@ This experiment contains code from @MrDoobs procedural city example, which has b
         <div id="UI">
             <div id="txtUIBox">0 of 100</div>
         </div>
+		<div id="mute"></div>
         
         
 <script type="text/javascript">
