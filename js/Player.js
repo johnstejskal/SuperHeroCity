@@ -1,4 +1,4 @@
-//var PlayerArms = PlayerArms || {}
+
 // ************************************************************************ 
 // PROTOTYOPE PUBLIC PROERTIES 
 // ************************************************************************ 
@@ -15,34 +15,18 @@ function Player()
     var armLSprite = new THREE.Sprite( handMaterial );
     this.armLSprite = armLSprite;
     this.armLSprite.scale.set(676, 439, 1);
-    //this.armLSprite.position.set( window.innerWidth/2- 400, window.innerHeight+500 , 0 );
     this.armLSprite.position.set( window.innerWidth/2- 400, document.documentElement.clientHeight+500 , 0 );
     scene.add( this.armLSprite );
  
      //Right Hand Sprite
     var handMaterialR = new THREE.SpriteMaterial( { map: texArmR, useScreenCoordinates: true, alignment: THREE.SpriteAlignment.bottomCenter } );  
-    // handMaterialR.uvOffset.y = .2;
-    //var handMaterialR = new THREE.SpriteMaterial( { map: texArmR, useScreenCoordinates: true, alignment: //THREE.SpriteAlignment.center } );
-   
     var armRSprite = new THREE.Sprite( handMaterialR );
     this.armRSprite = armRSprite;
     this.armRSprite.scale.set(676, 439, 1);
-   // this.armRSprite.position.set(window.innerWidth/2+400, window.innerHeight+500, 0 );
     this.armRSprite.position.set(window.innerWidth/2+400, document.documentElement.clientHeight+500, 0 );
     scene.add(  this.armRSprite );  
 
     this.animateSway();  
-    
-    /*
-    this.texAnimator_speedFX = new TextureAnimator( texSpeedFX, 2, 1, 2, 60 ); // texture, #horiz, #vert, #total, duration.
-    var speedFXMaterial = new THREE.MeshBasicMaterial( { map: texSpeedFX, side:THREE.DoubleSide, transparent: true, opacity: 1 } );
-    var speedFXGeometry = new THREE.PlaneGeometry(30, 10, 1, 1);
-    this.speedFX = new THREE.Mesh(speedFXGeometry, speedFXMaterial);
-    this.speedFX.scale.x = this.speedFX.scale.y = .1;
-    this.speedFX.position.set(0.02,-.59,-3);  
-    this.speedFX.material.opacity = 1;   
-    camera.add(this.speedFX)
-     */
     
 }
 
@@ -52,9 +36,7 @@ function Player()
 // ************************************************************************ 
 Player.prototype.update = function(){
 
-    //this.texAnimator_speedFX.update(1000 * delta);
-    //this.texAnimator_speedFX.update(1000 * delta);
-   // this.armRSprite.position.y =(currSpeed/maxSpeed * 1)// * (window.innerHeight-100)
+
 }
 
 //---------------------------------------o
@@ -77,7 +59,6 @@ Player.prototype.animateSway = function(){
 //---------------------------------------o
 Player.prototype.punch = function()
 {
-  
     var _this = this;  
     
     if(this.isPunching)
@@ -126,14 +107,11 @@ Player.prototype.hideSpeedFX = function()
 //---------------------------------------o
 Player.prototype.hideArms = function()
 {
-    
     if(this.hasArms)
     {
         this.hasArms = false;
-   // TweenLite.killTweensOf(this.armLSprite.position)
-   // TweenLite.killTweensOf(this.armRSprite.position)   
-    TweenLite.to(this.armLSprite.position, 1, {y:$('body').innerHeight() + 500, ease:Cubic.easeInOut}); 
-    TweenLite.to(this.armRSprite.position, 1, {y:$('body').innerHeight() + 500, ease:Cubic.easeInOut}); 
+		TweenLite.to(this.armLSprite.position, 1, {y:$('body').innerHeight() + 500, ease:Cubic.easeInOut}); 
+		TweenLite.to(this.armRSprite.position, 1, {y:$('body').innerHeight() + 500, ease:Cubic.easeInOut}); 
     }
                  
 }
@@ -147,13 +125,9 @@ Player.prototype.showArms = function()
     var h = $(window).height();
     if(!this.hasArms)
     {    
-        this.hasArms = true;
-   // TweenLite.killTweensOf(this.armLSprite.position)
-   // TweenLite.killTweensOf(this.armRSprite.position)
-    //TweenLite.to(this.armLSprite.position, 2, {y: h - 100, ease:Cubic.easeInOut}); 
-    TweenLite.to(this.armLSprite.position, 2, {y: window.innerHeight+50, ease:Cubic.easeInOut}); 
-   // TweenLite.to(this.armRSprite.position, 2, {y: h - 100, ease:Cubic.easeInOut}); 
-    TweenLite.to(this.armRSprite.position, 2, {y: window.innerHeight+50, ease:Cubic.easeInOut}); 
+		this.hasArms = true;
+		TweenLite.to(this.armLSprite.position, 2, {y: window.innerHeight+50, ease:Cubic.easeInOut}); 
+		TweenLite.to(this.armRSprite.position, 2, {y: window.innerHeight+50, ease:Cubic.easeInOut}); 
     }              
                          
 }

@@ -430,7 +430,9 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                  });  
             }
             
-            
+            //-----------------------------------o
+            //--------Game loop
+            //-----------------------------------o   
             function onUpdate()
             {
                 if(!isGameInPlay)
@@ -445,16 +447,6 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                 oPlayer.hideArms();   
                 else if(controls.speed > 0.01)
                 oPlayer.showArms(); 
-                
-                
-				//------------------------------------------------o
-                //-- Key Board Events, Boost if shift or space is down
-                //------------------------------------------------o
-				//if(( keyboard.pressed("shift") || keyboard.pressed("space") ) && !isColliding)
-
-                
-               // console.log("camera.position.z:"+camera.position.z)
-               // console.log("camera.position.x:"+camera.position.x)
                 
                       if(camera.position.z > 900)
                        camera.position.z = 900                      
@@ -496,7 +488,6 @@ This experiment contains code from @MrDoobs procedural city example, which has b
                         window.setTimeout(function(){
                             var num = Math.floor((Math.random()*8)+1);
                         document.getElementById('snd_voice'+num).play();
-                            //document.getElementById('snd_voice'+num).volume = 1.3;
                 
                         },500);
 						
